@@ -29,6 +29,7 @@ using NStack;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -66,7 +67,41 @@ namespace Terminal.Gui {
 				ReadFromConsoleOutput (new Size (Console.WindowWidth, Console.WindowHeight), coords, ref window);
 			}
 
-			return WriteConsoleOutput (ScreenBuffer, charInfoBuffer, coords, new Coord () { X = window.Left, Y = window.Top }, ref window);
+			//return WriteConsoleOutput (ScreenBuffer, charInfoBuffer, coords, new Coord () { X = window.Left, Y = window.Top }, ref window);
+			return WriteConsoleTrueColor (charInfoBuffer);
+		}
+
+		[DllImport ("kernel32.dll", EntryPoint = "WriteConsole", SetLastError = true, CharSet = CharSet.Unicode)]
+		static extern bool WriteConsole (
+		IntPtr hConsoleOutput,
+		String lpbufer,
+		UInt32 NumberOfCharsToWriten,
+		out UInt32 lpNumberOfCharsWritten,
+		object lpReserved);
+
+		public bool WriteConsoleTrueColor (CharInfo [] Buffer)
+		{
+			var rnd = new Random ();
+			char esc = '\x1b';
+			StringBuilder sb = new StringBuilder ();
+			//save cursor position (esc7) and move to (0,0)
+			sb.AppendFormat ("{0}7{0}[0;0H", esc);
+
+			sb.AppendFormat ("{0}[38;2;{1};{2};{3};48;2;{4};{5};{6}m", esc, rnd.Next (0, 255), rnd.Next (0, 255), rnd.Next (0, 255),
+				rnd.Next (0, 255), rnd.Next (0, 255), rnd.Next (0, 255));
+
+
+			for (int i = 0; i < Buffer.Length; i++) {
+				
+				if (Buffer [i].Char.UnicodeChar != esc)
+					sb.Append (Buffer [i].Char.UnicodeChar);
+				else
+					sb.Append (' ');
+			}
+			//restore cursore position
+			sb.AppendFormat ("{0}8", esc);
+			string s = sb.ToString ();
+			return WriteConsole (ScreenBuffer, s, (uint)(s.Length), out uint _, null);
 		}
 
 		public void ReadFromConsoleOutput (Size size, Coord coords, ref SmallRect window)
@@ -206,7 +241,9 @@ namespace Terminal.Gui {
 			set {
 				SetConsoleMode (InputHandle, value);
 				GetConsoleMode (OutputHandle, out var v);
-				SetConsoleMode (OutputHandle, v | 4);
+				var a = (v | 4) | 8;
+				a -= a & 2;
+				SetConsoleMode (OutputHandle, a);
 			}
 		}
 
@@ -1282,7 +1319,7 @@ namespace Terminal.Gui {
 			OutputBuffer = l.ToArray ();
 		}
 
-		public override void AddRune (Rune rune)
+		public override void AddRune (System.Rune rune)
 		{
 			rune = MakePrintable (rune);
 			var position = crow * Cols + ccol;
@@ -1295,7 +1332,7 @@ namespace Terminal.Gui {
 			}
 
 			ccol++;
-			var runeWidth = Rune.ColumnWidth (rune);
+			var runeWidth = System.Rune.ColumnWidth (rune);
 			if (runeWidth > 1) {
 				for (int i = 1; i < runeWidth; i++) {
 					AddStr (" ");
@@ -1506,8 +1543,8 @@ namespace Terminal.Gui {
 
 		public override void SetEscape (ustring str)
 		{
-			AddEscape (str);
-			escapes [crow * Cols + ccol] = str;
+			//AddEscape (str);
+			//	escapes [crow * Cols + ccol] = str;
 		}
 	}
 
