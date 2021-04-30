@@ -29,7 +29,7 @@ namespace UICatalog {
 			Win.Add (labelMirroringTextField);
 
 			textField.TextChanged += (prev) => {
-				labelMirroringTextField.Text = textField.Text;
+			//	labelMirroringTextField.Text = textField.Text;
 			};
 
 			var textView = new TextView () {

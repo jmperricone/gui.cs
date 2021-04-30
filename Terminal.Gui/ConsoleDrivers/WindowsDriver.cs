@@ -27,6 +27,7 @@
 //
 using NStack;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -79,20 +80,26 @@ namespace Terminal.Gui {
 		out UInt32 lpNumberOfCharsWritten,
 		object lpReserved);
 
+		int currentColor = -1;
+		int count = 0;
 		public bool WriteConsoleTrueColor (CharInfo [] Buffer)
 		{
+			count++;
+			Debug.WriteLine (count);
 			var rnd = new Random ();
 			char esc = '\x1b';
 			StringBuilder sb = new StringBuilder ();
 			//save cursor position (esc7) and move to (0,0)
 			sb.AppendFormat ("{0}7{0}[0;0H", esc);
 
-			sb.AppendFormat ("{0}[38;2;{1};{2};{3};48;2;{4};{5};{6}m", esc, rnd.Next (0, 255), rnd.Next (0, 255), rnd.Next (0, 255),
-				rnd.Next (0, 255), rnd.Next (0, 255), rnd.Next (0, 255));
-
-
 			for (int i = 0; i < Buffer.Length; i++) {
-				
+
+				if (currentColor != Buffer [i].Attributes) {
+					sb.AppendFormat ("{0}[38;2;{1};{2};{3};48;2;{4};{5};{6}m", esc, rnd.Next (0, 255), rnd.Next (0, 255), rnd.Next (0, 255),
+					rnd.Next (0, 255), rnd.Next (0, 255), rnd.Next (0, 255));
+					currentColor = Buffer [i].Attributes;
+				}
+
 				if (Buffer [i].Char.UnicodeChar != esc)
 					sb.Append (Buffer [i].Char.UnicodeChar);
 				else
@@ -1326,7 +1333,7 @@ namespace Terminal.Gui {
 
 			if (Clip.Contains (ccol, crow)) {
 				var escapestotal = GetEscapesBeforePosition (position);
-				//OutputBuffer [position + escapestotal].Attributes = (ushort)currentAttribute;
+				OutputBuffer [position + escapestotal].Attributes = (ushort)currentAttribute;
 				OutputBuffer [position + escapestotal].Char.UnicodeChar = (char)rune;
 				WindowsConsole.SmallRect.Update (ref damageRegion, (short)ccol, (short)crow);
 			}

@@ -119,19 +119,19 @@ namespace UICatalog {
 
 			editText.MouseClick += (m) => {
 				foreach (var v in txts) {
-					v.Text = editText.Text;
+					//v.Text = editText.Text;
 				}
 				foreach (var v in mtxts) {
-					v.Text = editText.Text;
+					//v.Text = editText.Text;
 				}
 			};
 
 			Win.KeyUp += (m) => {
 				foreach (var v in txts) {
-					v.Text = editText.Text;
+					//v.Text = editText.Text;
 				}
 				foreach (var v in mtxts) {
-					v.Text = editText.Text;
+					//v.Text = editText.Text;
 				}
 			};
 
