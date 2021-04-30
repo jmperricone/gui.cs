@@ -68,8 +68,8 @@ namespace Terminal.Gui {
 				ReadFromConsoleOutput (new Size (Console.WindowWidth, Console.WindowHeight), coords, ref window);
 			}
 			//Debug.WriteLine ("{0}-{1} {2}-{3}", window.Left, window.Top, window.Right, window.Bottom);
-			return WriteConsoleOutput (ScreenBuffer, charInfoBuffer, coords, new Coord () { X = window.Left, Y = window.Top }, ref window);
-			//return WriteConsoleTrueColor (charInfoBuffer);
+			//return WriteConsoleOutput (ScreenBuffer, charInfoBuffer, coords, new Coord () { X = window.Left, Y = window.Top }, ref window);
+			return WriteConsoleTrueColor (charInfoBuffer);
 		}
 
 		[DllImport ("kernel32.dll", EntryPoint = "WriteConsole", SetLastError = true, CharSet = CharSet.Unicode)]
@@ -84,8 +84,8 @@ namespace Terminal.Gui {
 		int count = 0;
 		public bool WriteConsoleTrueColor (CharInfo [] Buffer)
 		{
-			count++;
-			Debug.WriteLine (count);
+			// count++;
+			// Debug.WriteLine (count);
 			var rnd = new Random ();
 			char esc = '\x1b';
 			StringBuilder sb = new StringBuilder ();
@@ -247,10 +247,10 @@ namespace Terminal.Gui {
 
 			set {
 				SetConsoleMode (InputHandle, value);
-				//GetConsoleMode (OutputHandle, out var v);
-				//var a = (v | 4) | 8;
-				//a -= a & 2;
-				//SetConsoleMode (OutputHandle, a);
+				GetConsoleMode (OutputHandle, out var v);
+				var a = (v | 4) | 8;
+				a -= a & 2;
+				SetConsoleMode (OutputHandle, a);
 			}
 		}
 
@@ -1269,7 +1269,7 @@ namespace Terminal.Gui {
 
 		void ResizeScreen ()
 		{
-			OutputBuffer = new WindowsConsole.CharInfo [Rows * Cols * 5];
+			OutputBuffer = new WindowsConsole.CharInfo [Rows * Cols];
 			Clip = new Rect (0, 0, Cols, Rows);
 			damageRegion = new WindowsConsole.SmallRect () {
 				Top = 0,
