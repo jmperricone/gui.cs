@@ -1226,7 +1226,7 @@ namespace Terminal.Gui {
 		void ResizeScreen ()
 		{
 			OutputBuffer = new WindowsConsole.CharInfo [Rows * Cols * 5];
-			Clip = new Rect (0, 0, Cols + 100, Rows + 100);
+			Clip = new Rect (0, 0, Cols, Rows);
 			damageRegion = new WindowsConsole.SmallRect () {
 				Top = 0,
 				Left = 0,
