@@ -67,9 +67,9 @@ namespace Terminal.Gui {
 			if (ScreenBuffer == IntPtr.Zero) {
 				ReadFromConsoleOutput (new Size (Console.WindowWidth, Console.WindowHeight), coords, ref window);
 			}
-
-			//return WriteConsoleOutput (ScreenBuffer, charInfoBuffer, coords, new Coord () { X = window.Left, Y = window.Top }, ref window);
-			return WriteConsoleTrueColor (charInfoBuffer);
+			//Debug.WriteLine ("{0}-{1} {2}-{3}", window.Left, window.Top, window.Right, window.Bottom);
+			return WriteConsoleOutput (ScreenBuffer, charInfoBuffer, coords, new Coord () { X = window.Left, Y = window.Top }, ref window);
+			//return WriteConsoleTrueColor (charInfoBuffer);
 		}
 
 		[DllImport ("kernel32.dll", EntryPoint = "WriteConsole", SetLastError = true, CharSet = CharSet.Unicode)]
@@ -247,10 +247,10 @@ namespace Terminal.Gui {
 
 			set {
 				SetConsoleMode (InputHandle, value);
-				GetConsoleMode (OutputHandle, out var v);
-				var a = (v | 4) | 8;
-				a -= a & 2;
-				SetConsoleMode (OutputHandle, a);
+				//GetConsoleMode (OutputHandle, out var v);
+				//var a = (v | 4) | 8;
+				//a -= a & 2;
+				//SetConsoleMode (OutputHandle, a);
 			}
 		}
 
@@ -1332,9 +1332,9 @@ namespace Terminal.Gui {
 			var position = crow * Cols + ccol;
 
 			if (Clip.Contains (ccol, crow)) {
-				var escapestotal = GetEscapesBeforePosition (position);
-				OutputBuffer [position + escapestotal].Attributes = (ushort)currentAttribute;
-				OutputBuffer [position + escapestotal].Char.UnicodeChar = (char)rune;
+				//var escapestotal = GetEscapesBeforePosition (position);
+				OutputBuffer [position].Attributes = (ushort)currentAttribute;
+				OutputBuffer [position].Char.UnicodeChar = (char)rune;
 				WindowsConsole.SmallRect.Update (ref damageRegion, (short)ccol, (short)crow);
 			}
 
