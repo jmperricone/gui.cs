@@ -460,6 +460,16 @@ namespace Terminal.Gui {
 		{
 		}
 
+		public override void SetEscape (ustring str)
+		{
+			throw new NotImplementedException ();
+		}
+
+		internal override void AddEscape (ustring str)
+		{
+			throw new NotImplementedException ();
+		}
+
 		#endregion
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 	}

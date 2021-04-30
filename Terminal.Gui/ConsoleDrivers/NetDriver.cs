@@ -1761,6 +1761,16 @@ namespace Terminal.Gui {
 				ProcessInput (input);
 			} catch (OverflowException) { }
 		}
+
+		public override void SetEscape (ustring str)
+		{
+			throw new NotImplementedException ();
+		}
+
+		internal override void AddEscape (ustring str)
+		{
+			throw new NotImplementedException ();
+		}
 		#endregion
 
 		//

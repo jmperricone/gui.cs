@@ -27,6 +27,7 @@
 //
 using NStack;
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -204,6 +205,8 @@ namespace Terminal.Gui {
 
 			set {
 				SetConsoleMode (InputHandle, value);
+				GetConsoleMode (OutputHandle, out var v);
+				SetConsoleMode (OutputHandle, v | 4);
 			}
 		}
 
@@ -425,8 +428,8 @@ namespace Terminal.Gui {
 					rect.Bottom = rect.Top = row;
 					return;
 				}
-				if (col >= rect.Left && col <= rect.Right && row >= rect.Top && row <= rect.Bottom)
-					return;
+				//if (col >= rect.Left && col <= rect.Right && row >= rect.Top && row <= rect.Bottom)
+				//	return;
 				if (col < rect.Left)
 					rect.Left = col;
 				if (col > rect.Right)
@@ -1222,8 +1225,8 @@ namespace Terminal.Gui {
 
 		void ResizeScreen ()
 		{
-			OutputBuffer = new WindowsConsole.CharInfo [Rows * Cols];
-			Clip = new Rect (0, 0, Cols, Rows);
+			OutputBuffer = new WindowsConsole.CharInfo [Rows * Cols * 5];
+			Clip = new Rect (0, 0, Cols + 100, Rows + 100);
 			damageRegion = new WindowsConsole.SmallRect () {
 				Top = 0,
 				Left = 0,
@@ -1253,14 +1256,41 @@ namespace Terminal.Gui {
 			crow = row;
 		}
 
+		int GetEscapesBeforePosition (int position)
+		{
+			var total = 0;
+			for (int i = 0; i <= position; i++) {
+				if (escapes [i] != null && escapes [i] != ustring.Empty) {
+					total += escapes [i].Length;
+				}
+			}
+			return total;
+		}
+
+		internal override void AddEscape (ustring str)
+		{
+			var position = crow * Cols + ccol;
+			var l = OutputBuffer.ToList ();
+
+			var escapestotal = GetEscapesBeforePosition (position);
+
+			for (var i = 0; i < str.Length; i++) {
+				var a = new WindowsConsole.CharInfo ();
+				a.Char.UnicodeChar = (char)str [i];
+				l.Insert (escapestotal + position + i, a);
+			}
+			OutputBuffer = l.ToArray ();
+		}
+
 		public override void AddRune (Rune rune)
 		{
 			rune = MakePrintable (rune);
 			var position = crow * Cols + ccol;
 
 			if (Clip.Contains (ccol, crow)) {
-				OutputBuffer [position].Attributes = (ushort)currentAttribute;
-				OutputBuffer [position].Char.UnicodeChar = (char)rune;
+				var escapestotal = GetEscapesBeforePosition (position);
+				//OutputBuffer [position + escapestotal].Attributes = (ushort)currentAttribute;
+				OutputBuffer [position + escapestotal].Char.UnicodeChar = (char)rune;
 				WindowsConsole.SmallRect.Update (ref damageRegion, (short)ccol, (short)crow);
 			}
 
@@ -1337,7 +1367,7 @@ namespace Terminal.Gui {
 				return;
 
 			var bufferCoords = new WindowsConsole.Coord () {
-				X = (short)Clip.Width,
+				X = (short)(Clip.Width),
 				Y = (short)Clip.Height
 			};
 
@@ -1466,14 +1496,19 @@ namespace Terminal.Gui {
 
 			try {
 				ProcessInput (input);
-			} catch (OverflowException) { }
-			finally {
+			} catch (OverflowException) { } finally {
 				keyEvent.bKeyDown = false;
 				input.KeyEvent = keyEvent;
 				ProcessInput (input);
 			}
 		}
 		#endregion
+
+		public override void SetEscape (ustring str)
+		{
+			AddEscape (str);
+			escapes [crow * Cols + ccol] = str;
+		}
 	}
 
 	/// <summary>
@@ -1632,5 +1667,6 @@ namespace Terminal.Gui {
 			//	WinChanged?.Invoke (windowSize);
 			//}
 		}
+
 	}
 }

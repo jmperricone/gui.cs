@@ -10,6 +10,14 @@ namespace UICatalog {
 
 		public override void Setup ()
 		{
+			Application.Driver.Move (0, 0);
+			Application.Driver.SetEscape ("\u001b[5m\u001b[33m");
+			Application.Driver.Move (10, 10);
+			Application.Driver.SetEscape ("\u001b[34m");
+			Application.Driver.Move (15, 15);
+			Application.Driver.SetEscape ("\u001b[35m");
+			Application.Driver.Move (20,20);
+			Application.Driver.SetEscape ("\u001b[36m");
 			// string txt = ".\n...\n.....\nHELLO\n.....\n...\n.";
 			// string txt = "┌──┴──┐\n┤HELLO├\n└──┬──┘";
 			string txt = "HELLO WORLD";

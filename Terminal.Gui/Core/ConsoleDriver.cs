@@ -652,6 +652,7 @@ namespace Terminal.Gui {
 		/// <returns></returns>
 		public static Rune MakePrintable (Rune c)
 		{
+			return c;
 			if (c <= 0x1F || (c >= 0x80 && c <= 0x9F)) {
 				// ASCII (C0) control characters.
 				// C1 control characters (https://www.aivosto.com/articles/control-characters.html#c1)
@@ -1165,5 +1166,16 @@ namespace Terminal.Gui {
 		/// </summary>
 		/// <returns>The current attribute.</returns>
 		public abstract Attribute GetAttribute ();
+
+
+		public ustring [] escapes = new ustring [10000];
+
+		/// <summary>
+		/// Set Escape Sequence in the current position.
+		/// </summary>
+		/// <param name="str"></param>
+		public abstract void SetEscape (ustring str);
+
+		internal abstract void AddEscape (ustring str);
 	}
 }

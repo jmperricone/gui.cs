@@ -974,6 +974,16 @@ namespace Terminal.Gui {
 			}
 			keyHandler (new KeyEvent (k, MapKeyModifiers (k)));
 		}
+
+		public override void SetEscape (ustring str)
+		{
+			throw new NotImplementedException ();
+		}
+
+		internal override void AddEscape (ustring str)
+		{
+			throw new NotImplementedException ();
+		}
 	}
 
 	internal static class Platform {

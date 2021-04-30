@@ -12,7 +12,7 @@ namespace UICatalog {
 	class Text : Scenario {
 		public override void Setup ()
 		{
-			var s = "TAB to jump between text fields.";
+			var s = "\u001b[32mMike";
 			var textField = new TextField (s) {
 				X = 1,
 				Y = 1,
