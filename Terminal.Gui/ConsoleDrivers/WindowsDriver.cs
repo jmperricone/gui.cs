@@ -1474,6 +1474,7 @@ namespace Terminal.Gui {
 
 			if (Clip.Contains (ccol, crow)) {
 				OutputBuffer [position].Attributes = (ushort)currentAttribute;
+				OutputBuffer [position].Attributes |= (ushort)(currentUnderlineAttribute ? 0x8000 : 0);
 				OutputBuffer [position].Char.UnicodeChar = (char)rune;
 				contents [crow, ccol, 0] = (int)(uint)rune;
 				contents [crow, ccol, 1] = currentAttribute;
@@ -1520,9 +1521,11 @@ namespace Terminal.Gui {
 			);
 		}
 
-		public override Attribute MakeAttribute (Color fore, Color back)
+		public override Attribute MakeAttribute (Color fore, Color back, bool underline = false)
 		{
-			return MakeColor ((ConsoleColor)fore, (ConsoleColor)back);
+			var attr = MakeColor ((ConsoleColor)fore, (ConsoleColor)back);
+			attr.UnderLine = underline;
+			return attr;
 		}
 
 		public override void Refresh ()

@@ -124,10 +124,18 @@ namespace Terminal.Gui {
 
 		Attribute currentAttribute;
 
+		static int A_UNDERLINE = 0x20000;
+
 		public override void SetAttribute (Attribute c)
 		{
 			currentAttribute = c;
 			Curses.attrset (currentAttribute);
+
+			if (c.UnderLine) {
+				Curses.attron (A_UNDERLINE);
+			} else {
+				Curses.attroff (A_UNDERLINE);
+			}
 		}
 
 		public Curses.Window window;
@@ -1036,7 +1044,7 @@ namespace Terminal.Gui {
 			throw new ArgumentException ("Invalid curses color code");
 		}
 
-		public override Attribute MakeAttribute (Color fore, Color back)
+		public override Attribute MakeAttribute (Color fore, Color back, bool underline = false)
 		{
 			var f = MapColor (fore);
 			//return MakeColor ((short)(f & 0xffff), (short)MapColor (back)) | ((f & Curses.A_BOLD) != 0 ? Curses.A_BOLD : 0);
@@ -1085,7 +1093,9 @@ namespace Terminal.Gui {
 
 		public override Attribute GetAttribute ()
 		{
-			return currentAttribute;
+			Attribute attr = currentAttribute;
+			attr.UnderLine = currentUnderlineAttribute;
+			return attr;
 		}
 
 		/// <inheritdoc/>
