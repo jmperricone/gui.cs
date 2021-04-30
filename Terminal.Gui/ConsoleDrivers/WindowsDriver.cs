@@ -302,6 +302,13 @@ namespace Terminal.Gui {
 			}
 		}
 
+		public bool HeightAsBuffer { get; set; }
+
+		/// <summary>
+		/// Underscore - Character Attributes
+		/// </summary>
+		public const ushort COMMON_LVB_UNDERSCORE = 0x8000;
+
 		[Flags]
 		public enum ConsoleModes : uint {
 			EnableProcessedInput = 1,
@@ -1474,7 +1481,7 @@ namespace Terminal.Gui {
 
 			if (Clip.Contains (ccol, crow)) {
 				OutputBuffer [position].Attributes = (ushort)currentAttribute;
-				OutputBuffer [position].Attributes |= (ushort)(currentUnderlineAttribute ? 0x8000 : 0);
+				OutputBuffer [position].Attributes |= (ushort)(currentUnderlineAttribute ? WindowsConsole.COMMON_LVB_UNDERSCORE : 0);
 				OutputBuffer [position].Char.UnicodeChar = (char)rune;
 				contents [crow, ccol, 0] = (int)(uint)rune;
 				contents [crow, ccol, 1] = currentAttribute;
