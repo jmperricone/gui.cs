@@ -92,6 +92,8 @@ namespace Terminal.Gui {
 			//save cursor position (esc7) and move to (0,0)
 			sb.AppendFormat ("{0}7{0}[0;0H", esc);
 
+			var sixel = esc + "Pq\n#0;2;0;0;0#1;2;100;100;0#2;2;0;100;0\n#1~~@@vv@@~~@@~~$\n#2??}}GG}}??}}??-\n#1!14@\n" + esc + "\\";
+
 			for (int i = 0; i < Buffer.Length; i++) {
 
 				if (currentColor != Buffer [i].Attributes) {
@@ -105,6 +107,9 @@ namespace Terminal.Gui {
 				else
 					sb.Append (' ');
 			}
+
+			sb.Insert (0, sixel);
+
 			//restore cursore position
 			sb.AppendFormat ("{0}8", esc);
 			string s = sb.ToString ();
@@ -472,8 +477,8 @@ namespace Terminal.Gui {
 					rect.Bottom = rect.Top = row;
 					return;
 				}
-				//if (col >= rect.Left && col <= rect.Right && row >= rect.Top && row <= rect.Bottom)
-				//	return;
+				if (col >= rect.Left && col <= rect.Right && row >= rect.Top && row <= rect.Bottom)
+					return;
 				if (col < rect.Left)
 					rect.Left = col;
 				if (col > rect.Right)

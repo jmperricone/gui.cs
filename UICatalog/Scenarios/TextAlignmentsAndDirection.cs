@@ -16,7 +16,7 @@ namespace UICatalog {
 			Application.Driver.SetEscape ("\u001b[34m");
 			Application.Driver.Move (15, 15);
 			Application.Driver.SetEscape ("\u001b[35m");
-			Application.Driver.Move (20,20);
+			Application.Driver.Move (20, 20);
 			Application.Driver.SetEscape ("\u001b[36m");
 			// string txt = ".\n...\n.....\nHELLO\n.....\n...\n.";
 			// string txt = "┌──┴──┐\n┤HELLO├\n└──┬──┘";
@@ -128,10 +128,10 @@ namespace UICatalog {
 
 			Win.KeyUp += (m) => {
 				foreach (var v in txts) {
-					//v.Text = editText.Text;
+					v.Text = editText.Text;
 				}
 				foreach (var v in mtxts) {
-					//v.Text = editText.Text;
+					v.Text = editText.Text;
 				}
 			};
 
