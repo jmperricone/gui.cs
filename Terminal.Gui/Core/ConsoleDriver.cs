@@ -166,6 +166,7 @@ namespace Terminal.Gui {
 				throw new InvalidOperationException ("The Application has not been initialized");
 			return Application.Driver.GetAttribute ();
 		}
+
 	}
 
 	/// <summary>
