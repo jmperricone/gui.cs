@@ -92,8 +92,8 @@ namespace Terminal.Gui {
 			//save cursor position (esc7) and move to (0,0)
 			sb.AppendFormat ("{0}7{0}[0;0H", esc);
 
-			var sixel = esc + "Pq\n#0;2;0;0;0#1;2;100;100;0#2;2;0;100;0\n#1~~@@vv@@~~@@~~$\n#2??}}GG}}??}}??-\n#1!14@\n" + esc + "\\";
-
+			//var sixel = "\u001b[33mMike\u001bPq#0;2;0;0;0#1;2;100;100;0#2;2;0;100;0#1~~@@vv@@~~@@~~$#2??}}GG}}??}}??-#1!14@\u001b\\";
+			
 			for (int i = 0; i < Buffer.Length; i++) {
 
 				if (currentColor != Buffer [i].Attributes) {
@@ -101,14 +101,14 @@ namespace Terminal.Gui {
 					rnd.Next (0, 255), rnd.Next (0, 255), rnd.Next (0, 255));
 					currentColor = Buffer [i].Attributes;
 				}
-
+				
 				if (Buffer [i].Char.UnicodeChar != esc)
 					sb.Append (Buffer [i].Char.UnicodeChar);
 				else
 					sb.Append (' ');
 			}
 
-			sb.Insert (0, sixel);
+			//sb.Append (sixel);
 
 			//restore cursore position
 			sb.AppendFormat ("{0}8", esc);
@@ -252,10 +252,11 @@ namespace Terminal.Gui {
 
 			set {
 				SetConsoleMode (InputHandle, value);
-				GetConsoleMode (OutputHandle, out var v);
-				var a = (v | 4) | 8;
-				a -= a & 2;
-				SetConsoleMode (OutputHandle, a);
+				//GetConsoleMode (OutputHandle, out var v);
+				//var a = (v | 4) | 8;
+				//a -= a & 2;
+				//a -= a & 1;
+				//SetConsoleMode (OutputHandle, a);
 			}
 		}
 
