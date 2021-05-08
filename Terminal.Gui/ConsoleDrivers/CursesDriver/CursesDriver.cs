@@ -102,8 +102,8 @@ namespace Terminal.Gui {
 			//Console.Out.Flush ();
 
 			//Set cursor key to cursor.
-			Console.Out.Write("\x1b[?1l");
-			Console.Out.Flush();
+			Console.Out.Write ("\x1b[?1l");
+			Console.Out.Flush ();
 		}
 
 		public override void UpdateScreen () => window.redrawwin ();
@@ -112,13 +112,41 @@ namespace Terminal.Gui {
 
 		public override void SetAttribute (Attribute c)
 		{
-			currentAttribute = c.Value;
-			Curses.attrset (currentAttribute);
+
+			//Application.Top?.SuperView?.Add (new Label (last_color.ToString()) { X = 0, Y = 0 });
+			if (currentAttribute != c.Value) {
+				currentAttribute = c.Value;
+
+				if (last_color < 20) {
+					last_color = 20;
+				}
+				if (last_color > 355) {
+					last_color = 20;
+				}
+				if (last_color_pair > 10000) {
+					last_color_pair = 16;
+				}
+				
+				//Curses.InitColor (++last_color, (short)(rnd.Next (256)), (short)(rnd.Next (256) ), (short)(rnd.Next (256) ));
+				Curses.init_extended_color (++last_color, (rnd.Next (256) * 1000 / 255), (rnd.Next (256) * 1000 / 255), (rnd.Next (256) * 1000 / 255));
+				var f = last_color;
+				//Curses.InitColor (++last_color, (short)(rnd.Next (256) ), (short)(rnd.Next (256)), (short)(rnd.Next (256) ));
+				Curses.init_extended_color (++last_color, (rnd.Next (256) * 1000 / 255), (rnd.Next (256) * 1000 / 255), (rnd.Next (256) * 1000 / 255));
+				var b = last_color;
+				Curses.init_extended_pair (++last_color_pair, f, b);
+				
+				Curses.attr_set (Curses.A_NORMAL, (short)last_color_pair, IntPtr.Zero);
+				//Curses.attrset (currentAttribute);
+			}
 		}
 
 		public Curses.Window window;
 
-		static short last_color_pair = 16;
+		static int last_color_pair = 16;
+
+		static Random rnd = new Random ();
+
+		static int last_color = 20;
 
 		/// <summary>
 		/// Creates a curses color from the provided foreground and background colors
@@ -128,12 +156,18 @@ namespace Terminal.Gui {
 		/// <returns></returns>
 		public static Attribute MakeColor (short foreground, short background)
 		{
-			Curses.InitColorPair (++last_color_pair, foreground, background);
+			//Curses.InitColor (++last_color, (short)(rnd.Next (256) * 1000 / 255), (short)(rnd.Next (256) * 1000 / 255), (short)(rnd.Next (256) * 1000 / 255));
+			//var f = last_color;
+			//Curses.InitColor (++last_color, (short)(rnd.Next (256) * 1000 / 255), (short)(rnd.Next (256) * 1000 / 255), (short)(rnd.Next (256) * 1000 / 255));
+			//var b = last_color;
+
+			//Curses.init_extended_pair (++last_color_pair, f, b);
+			////Curses.InitColorPair (++last_color_pair, foreground, background);
 			return new Attribute (
-				value: Curses.ColorPair (last_color_pair),
+				value:(((ushort)foreground << 16)) | (ushort)background, //Curses.ColorPair (last_color_pair),
 				foreground: (Color)foreground,
 				background: (Color)background
-				);
+			);
 		}
 
 		int [,] colorPairs = new int [16, 16];
@@ -158,11 +192,11 @@ namespace Terminal.Gui {
 		public override void SetColors (short foreColorId, short backgroundColorId)
 		{
 			int key = (((ushort)foreColorId << 16)) | (ushort)backgroundColorId;
-			if (!rawPairs.TryGetValue (key, out var v)) {
-				v = MakeColor (foreColorId, backgroundColorId);
-				rawPairs [key] = v;
-			}
-			SetAttribute (v);
+			//if (!rawPairs.TryGetValue (key, out var v)) {
+			//	v = MakeColor (foreColorId, backgroundColorId);
+			//	rawPairs [key] = v;
+			//}
+			SetAttribute (key);
 		}
 
 		static Key MapCursesKey (int cursesKey)

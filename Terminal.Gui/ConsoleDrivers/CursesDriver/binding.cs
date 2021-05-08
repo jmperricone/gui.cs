@@ -66,8 +66,8 @@ namespace Unix.Terminal {
 		static NativeMethods methods;
 
 
-		[DllImport("libc")]
-		public extern static int setlocale(int cate, [MarshalAs(UnmanagedType.LPStr)] string locale);
+		[DllImport ("libc")]
+		public extern static int setlocale (int cate, [MarshalAs (UnmanagedType.LPStr)] string locale);
 
 		static void LoadMethods ()
 		{
@@ -86,18 +86,18 @@ namespace Unix.Terminal {
 			lines_ptr = get_ptr ("LINES");
 			cols_ptr = get_ptr ("COLS");
 		}
-		
+
 		static public Window initscr ()
 		{
-			setlocale(LC_ALL, "");
+			setlocale (LC_ALL, "");
 			FindNCurses ();
-			
+
 			main_window = new Window (methods.initscr ());
 			try {
 				console_sharp_get_dims (out lines, out cols);
-			} catch (DllNotFoundException){
+			} catch (DllNotFoundException) {
 				endwin ();
-				Console.Error.WriteLine ("Unable to find the @MONO_CURSES@ native library\n" + 
+				Console.Error.WriteLine ("Unable to find the @MONO_CURSES@ native library\n" +
 							 "this is different than the managed mono-curses.dll\n\n" +
 							 "Typically you need to install to a LD_LIBRARY_PATH directory\n" +
 							 "or DYLD_LIBRARY_PATH directory or run /sbin/ldconfig");
@@ -106,7 +106,7 @@ namespace Unix.Terminal {
 			return main_window;
 		}
 
-		public static int Lines {	
+		public static int Lines {
 			get {
 				return lines;
 			}
@@ -125,16 +125,16 @@ namespace Unix.Terminal {
 		public static bool CheckWinChange ()
 		{
 			int l, c;
-			
+
 			console_sharp_get_dims (out l, out c);
-			if (l != lines || c != cols){
+			if (l != lines || c != cols) {
 				lines = l;
 				cols = c;
 				return true;
 			}
 			return false;
 		}
-		
+
 		public static int addstr (string format, params object [] args)
 		{
 			var s = string.Format (format, args);
@@ -151,9 +151,9 @@ namespace Unix.Terminal {
 		//
 		public static int addch (int ch)
 		{
-			if (ch < 127 || ch > 0xffff )
+			if (ch < 127 || ch > 0xffff)
 				return methods.addch (ch);
-			char c = (char) ch;
+			char c = (char)ch;
 			return addwstr (new String (c, 1));
 		}
 
@@ -167,7 +167,7 @@ namespace Unix.Terminal {
 				throw new Exception ("Could not load the key " + key);
 			return ptr;
 		}
-		
+
 		internal static IntPtr read_static_ptr (string key)
 		{
 			var ptr = get_ptr (key);
@@ -175,8 +175,8 @@ namespace Unix.Terminal {
 		}
 
 		internal static IntPtr console_sharp_get_stdscr () => stdscr;
-		
-		
+
+
 		internal static IntPtr console_sharp_get_curscr ()
 		{
 			return Marshal.ReadIntPtr (curscr_ptr);
@@ -191,8 +191,8 @@ namespace Unix.Terminal {
 		public static Event mousemask (Event newmask, out Event oldmask)
 		{
 			IntPtr e;
-			var ret = (Event) (methods.mousemask ((IntPtr) newmask, out e));
-			oldmask = (Event) e;
+			var ret = (Event)(methods.mousemask ((IntPtr)newmask, out e));
+			oldmask = (Event)e;
 			return ret;
 		}
 
@@ -209,8 +209,11 @@ namespace Unix.Terminal {
 		public static int StartColor () => methods.start_color ();
 		public static bool HasColors => methods.has_colors ();
 		public static int InitColorPair (short pair, short foreground, short background) => methods.init_pair (pair, foreground, background);
+		public static int InitColor (short color, short r, short g, short b) => methods.init_color (color, r, g, b);
+		public static int InitExtendedPair (int pair, int foreground, int background) => methods.init_extended_pair (pair, foreground, background);
+		public static int InitExtendedColor (int color, int r, int g, int b) => methods.init_extended_color (color, r, g, b);
 		public static int UseDefaultColors () => methods.use_default_colors ();
-		public static int ColorPairs => methods.COLOR_PAIRS();
+		public static int ColorPairs => methods.COLOR_PAIRS ();
 
 		//
 		// The proxy methods to call into each version
@@ -240,11 +243,11 @@ namespace Unix.Terminal {
 		static public int leaveok (IntPtr win, bool bf) => methods.leaveok (win, bf);
 		static public int wsetscrreg (IntPtr win, int top, int bot) => methods.wsetscrreg (win, top, bot);
 		static public int scrollok (IntPtr win, bool bf) => methods.scrollok (win, bf);
-		static public int nl() => methods.nl();
-		static public int nonl() => methods.nonl();
+		static public int nl () => methods.nl ();
+		static public int nonl () => methods.nonl ();
 		static public int setscrreg (int top, int bot) => methods.setscrreg (top, bot);
 		static public int refresh () => methods.refresh ();
-		static public int doupdate() => methods.doupdate();
+		static public int doupdate () => methods.doupdate ();
 		static public int wrefresh (IntPtr win) => methods.wrefresh (win);
 		static public int redrawwin (IntPtr win) => methods.redrawwin (win);
 		//static public int wredrawwin (IntPtr win, int beg_line, int num_lines) => methods.wredrawwin (win, beg_line, num_lines);
@@ -258,6 +261,7 @@ namespace Unix.Terminal {
 		static public int attron (int attrs) => methods.attron (attrs);
 		static public int attroff (int attrs) => methods.attroff (attrs);
 		static public int attrset (int attrs) => methods.attrset (attrs);
+		static public int attr_set (int attrs, short pair, IntPtr opts) => methods.attr_set (attrs, pair, opts);
 		static public int getch () => methods.getch ();
 		static public int get_wch (out int sequence) => methods.get_wch (out sequence);
 		static public int ungetch (int ch) => methods.ungetch (ch);
@@ -265,8 +269,13 @@ namespace Unix.Terminal {
 		static public bool has_colors () => methods.has_colors ();
 		static public int start_color () => methods.start_color ();
 		static public int init_pair (short pair, short f, short b) => methods.init_pair (pair, f, b);
+		static public int init_color (short color, short r, short g, short b) => methods.init_color (color, r, g, b);
+		static public int init_extended_pair (int pair, int f, int b) => methods.init_extended_pair (pair, f, b);
+		static public int init_extended_color (int color, int r, int g, int b) => methods.init_extended_color (color, r, g, b);
 		static public int use_default_colors () => methods.use_default_colors ();
-		static public int COLOR_PAIRS() => methods.COLOR_PAIRS();
+		static public int COLOR_PAIRS () => methods.COLOR_PAIRS ();
+		static public int COLOR_PAIR (int n) => methods.COLOR_PAIR (n);
+		static public int COLORS () => methods.COLORS ();
 		static public uint getmouse (out MouseEvent ev) => methods.getmouse (out ev);
 		static public uint ungetmouse (ref MouseEvent ev) => methods.ungetmouse (ref ev);
 		static public int mouseinterval (int interval) => methods.mouseinterval (interval);
@@ -313,12 +322,13 @@ namespace Unix.Terminal {
 		public delegate int move (int line, int col);
 		public delegate int curs_set (int visibility);
 		public delegate int addch (int ch);
-		public delegate int addwstr([MarshalAs(UnmanagedType.LPWStr)]string s);
+		public delegate int addwstr ([MarshalAs (UnmanagedType.LPWStr)] string s);
 		public delegate int wmove (IntPtr win, int line, int col);
 		public delegate int waddch (IntPtr win, int ch);
 		public delegate int attron (int attrs);
 		public delegate int attroff (int attrs);
 		public delegate int attrset (int attrs);
+		public delegate int attr_set (int attrs, short attr, IntPtr opts);
 		public delegate int getch ();
 		public delegate int get_wch (out int sequence);
 		public delegate int ungetch (int ch);
@@ -326,8 +336,13 @@ namespace Unix.Terminal {
 		public delegate bool has_colors ();
 		public delegate int start_color ();
 		public delegate int init_pair (short pair, short f, short b);
+		public delegate int init_color (short color, short r, short g, short b);
+		public delegate int init_extended_pair (int pair, int f, int b);
+		public delegate int init_extended_color (int color, int r, int g, int b);
 		public delegate int use_default_colors ();
 		public delegate int COLOR_PAIRS ();
+		public delegate int COLOR_PAIR (int n);
+		public delegate int COLORS ();
 		public delegate uint getmouse (out Curses.MouseEvent ev);
 		public delegate uint ungetmouse (ref Curses.MouseEvent ev);
 		public delegate int mouseinterval (int interval);
@@ -379,6 +394,7 @@ namespace Unix.Terminal {
 		public readonly Delegates.attron attron;
 		public readonly Delegates.attroff attroff;
 		public readonly Delegates.attrset attrset;
+		public readonly Delegates.attr_set attr_set;
 		public readonly Delegates.getch getch;
 		public readonly Delegates.get_wch get_wch;
 		public readonly Delegates.ungetch ungetch;
@@ -386,8 +402,15 @@ namespace Unix.Terminal {
 		public readonly Delegates.has_colors has_colors;
 		public readonly Delegates.start_color start_color;
 		public readonly Delegates.init_pair init_pair;
+		public readonly Delegates.init_color init_color;
+
+		public readonly Delegates.init_extended_pair init_extended_pair;
+		public readonly Delegates.init_extended_color init_extended_color;
 		public readonly Delegates.use_default_colors use_default_colors;
 		public readonly Delegates.COLOR_PAIRS COLOR_PAIRS;
+		public readonly Delegates.COLOR_PAIR COLOR_PAIR;
+
+		public readonly Delegates.COLORS COLORS;
 		public readonly Delegates.getmouse getmouse;
 		public readonly Delegates.ungetmouse ungetmouse;
 		public readonly Delegates.mouseinterval mouseinterval;
@@ -434,13 +457,14 @@ namespace Unix.Terminal {
 			wnoutrefresh = lib.GetNativeMethodDelegate<Delegates.wnoutrefresh> ("wnoutrefresh");
 			move = lib.GetNativeMethodDelegate<Delegates.move> ("move");
 			curs_set = lib.GetNativeMethodDelegate<Delegates.curs_set> ("curs_set");
-			addch = lib.GetNativeMethodDelegate<Delegates.addch>("addch");
+			addch = lib.GetNativeMethodDelegate<Delegates.addch> ("addch");
 			addwstr = lib.GetNativeMethodDelegate<Delegates.addwstr> ("addwstr");
 			wmove = lib.GetNativeMethodDelegate<Delegates.wmove> ("wmove");
 			waddch = lib.GetNativeMethodDelegate<Delegates.waddch> ("waddch");
 			attron = lib.GetNativeMethodDelegate<Delegates.attron> ("attron");
 			attroff = lib.GetNativeMethodDelegate<Delegates.attroff> ("attroff");
 			attrset = lib.GetNativeMethodDelegate<Delegates.attrset> ("attrset");
+			attr_set = lib.GetNativeMethodDelegate<Delegates.attr_set> ("attr_set");
 			getch = lib.GetNativeMethodDelegate<Delegates.getch> ("getch");
 			get_wch = lib.GetNativeMethodDelegate<Delegates.get_wch> ("get_wch");
 			ungetch = lib.GetNativeMethodDelegate<Delegates.ungetch> ("ungetch");
@@ -448,8 +472,13 @@ namespace Unix.Terminal {
 			has_colors = lib.GetNativeMethodDelegate<Delegates.has_colors> ("has_colors");
 			start_color = lib.GetNativeMethodDelegate<Delegates.start_color> ("start_color");
 			init_pair = lib.GetNativeMethodDelegate<Delegates.init_pair> ("init_pair");
+			init_color = lib.GetNativeMethodDelegate<Delegates.init_color> ("init_color");
+			init_extended_pair = lib.GetNativeMethodDelegate<Delegates.init_extended_pair> ("init_extended_pair");
+			init_extended_color = lib.GetNativeMethodDelegate<Delegates.init_extended_color> ("init_extended_color");
 			use_default_colors = lib.GetNativeMethodDelegate<Delegates.use_default_colors> ("use_default_colors");
+			COLORS = lib.GetNativeMethodDelegate<Delegates.COLORS> ("COLORS");
 			COLOR_PAIRS = lib.GetNativeMethodDelegate<Delegates.COLOR_PAIRS> ("COLOR_PAIRS");
+			COLOR_PAIR = lib.GetNativeMethodDelegate<Delegates.COLOR_PAIR> ("COLOR_PAIR");
 			getmouse = lib.GetNativeMethodDelegate<Delegates.getmouse> ("getmouse");
 			ungetmouse = lib.GetNativeMethodDelegate<Delegates.ungetmouse> ("ungetmouse");
 			mouseinterval = lib.GetNativeMethodDelegate<Delegates.mouseinterval> ("mouseinterval");
