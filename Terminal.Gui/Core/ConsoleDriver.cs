@@ -104,7 +104,7 @@ namespace Terminal.Gui {
 		/// </summary>
 		public Color Background { get; }
 		/// <summary>
-		/// The background color.
+		/// Gets or sets whether this is underline.
 		/// </summary>
 		public bool UnderLine { get; set; }
 
@@ -124,6 +124,7 @@ namespace Terminal.Gui {
 			Value = value;
 			Foreground = foreground;
 			Background = background;
+			UnderLine = false;
 		}
 
 		/// <summary>
@@ -139,6 +140,7 @@ namespace Terminal.Gui {
 			UnderLine = underline;
 			Foreground = foreground;
 			Background = background;
+			UnderLine = underline;
 		}
 
 		/// <summary>

@@ -124,17 +124,15 @@ namespace Terminal.Gui {
 
 		Attribute currentAttribute;
 
-		static int A_UNDERLINE = 0x20000;
-
 		public override void SetAttribute (Attribute c)
 		{
 			currentAttribute = c;
 			Curses.attrset (currentAttribute);
 
 			if (c.UnderLine) {
-				Curses.attron (A_UNDERLINE);
+				Curses.attron (Curses.A_UNDERLINE);
 			} else {
-				Curses.attroff (A_UNDERLINE);
+				Curses.attroff (Curses.A_UNDERLINE);
 			}
 		}
 
@@ -1048,7 +1046,9 @@ namespace Terminal.Gui {
 		{
 			var f = MapColor (fore);
 			//return MakeColor ((short)(f & 0xffff), (short)MapColor (back)) | ((f & Curses.A_BOLD) != 0 ? Curses.A_BOLD : 0);
-			return MakeColor ((short)(f & 0xffff), (short)MapColor (back));
+			Attribute attr = MakeColor ((short)(f & 0xffff), (short)MapColor (back));
+			attr.UnderLine = underline;
+			return attr;
 		}
 
 		public override void Suspend ()
@@ -1093,9 +1093,7 @@ namespace Terminal.Gui {
 
 		public override Attribute GetAttribute ()
 		{
-			Attribute attr = currentAttribute;
-			attr.UnderLine = currentUnderlineAttribute;
-			return attr;
+			return currentAttribute;
 		}
 
 		/// <inheritdoc/>

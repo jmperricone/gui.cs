@@ -1481,7 +1481,7 @@ namespace Terminal.Gui {
 
 			if (Clip.Contains (ccol, crow)) {
 				OutputBuffer [position].Attributes = (ushort)currentAttribute;
-				OutputBuffer [position].Attributes |= (ushort)(currentUnderlineAttribute ? WindowsConsole.COMMON_LVB_UNDERSCORE : 0);
+				OutputBuffer [position].Attributes |= (ushort)(currentAttribute.UnderLine ? WindowsConsole.COMMON_LVB_UNDERSCORE : 0);
 				OutputBuffer [position].Char.UnicodeChar = (char)rune;
 				contents [crow, ccol, 0] = (int)(uint)rune;
 				contents [crow, ccol, 1] = currentAttribute;
@@ -1868,7 +1868,7 @@ namespace Terminal.Gui {
 		void IMainLoopDriver.MainIteration ()
 		{
 			while (resultQueue.Count > 0) {
-				var inputEvent = resultQueue.Dequeue()[0];
+				var inputEvent = resultQueue.Dequeue () [0];
 				ProcessInput?.Invoke (inputEvent);
 			}
 			if (winChanged) {
