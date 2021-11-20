@@ -71,7 +71,7 @@ namespace Terminal.Gui {
 		}
 
 		const int STD_INPUT_HANDLE = -10;
-		internal const int STD_OUTPUT_HANDLE = -11;
+		const int STD_OUTPUT_HANDLE = -11;
 		const int STD_ERROR_HANDLE = -12;
 
 		// Input modes.
@@ -93,7 +93,7 @@ namespace Terminal.Gui {
 		const uint ENABLE_LVB_GRID_WORLDWIDE = 10;
 
 		[DllImport ("kernel32.dll", SetLastError = true)]
-		internal static extern IntPtr GetStdHandle (int nStdHandle);
+		static extern IntPtr GetStdHandle (int nStdHandle);
 
 		[DllImport ("kernel32.dll")]
 		static extern bool GetConsoleMode (IntPtr hConsoleHandle, out uint lpMode);
@@ -104,32 +104,6 @@ namespace Terminal.Gui {
 		[DllImport ("kernel32.dll")]
 		static extern uint GetLastError ();
 
-		[DllImport ("kernel32.dll")]
-		internal static extern bool SetConsoleTextAttribute (IntPtr hConsoleOutput, ushort attributes);
-
-		[DllImport ("kernel32.dll")]
-		internal static extern bool GetConsoleScreenBufferInfo (IntPtr hConsoleOutput, out CONSOLE_SCREEN_BUFFER_INFO lpConsoleScreenBufferInfo);
-	}
-
-	struct COORD {
-		internal short X;
-		internal short Y;
-	}
-
-	struct SMALL_RECT {
-		internal short Left;
-		internal short Top;
-		internal short Right;
-		internal short Bottom;
-	}
-
-	[StructLayoutAttribute (LayoutKind.Sequential)]
-	struct CONSOLE_SCREEN_BUFFER_INFO {
-		internal COORD dwSize;
-		internal COORD dwCursorPosition;
-		internal ushort wAttributes;
-		internal SMALL_RECT srWindow;
-		internal COORD dwMaximumWindowSize;
 	}
 
 	internal class NetEvents {
@@ -1240,7 +1214,7 @@ namespace Terminal.Gui {
 				contents [crow, ccol, 0] = (int)(uint)rune;
 				contents [crow, ccol, 1] = currentAttribute;
 				contents [crow, ccol, 2] = 1;
-				contents [crow, ccol, 3] = currentUnderlineAttribute;
+				contents [crow, ccol, 3] = currentAttribute.UnderLine ? 1 : 0;
 				dirtyLine [crow] = true;
 
 				ccol++;
@@ -1444,7 +1418,6 @@ namespace Terminal.Gui {
 			      .Select (s => (int)s);
 			if (values.Contains (color & 0xffff)) {
 				Console.BackgroundColor = (ConsoleColor)(color & 0xffff);
-
 			}
 			if (values.Contains ((color >> 16) & 0xffff)) {
 				Console.ForegroundColor = (ConsoleColor)((color >> 16) & 0xffff);
@@ -1454,18 +1427,14 @@ namespace Terminal.Gui {
 		bool redrawUnderline = false;
 		void SetUnderline (bool state)
 		{
+			if (redrawUnderline && !state) {
+				Console.Out.Write ("\x1b[24m");
+				Console.Out.Flush ();
+			}
 			redrawUnderline = state;
-			if (IsWinPlatform == true) {
-				var OutputHandle = NetWinVTConsole.GetStdHandle (NetWinVTConsole.STD_OUTPUT_HANDLE);
-				var success = NetWinVTConsole.GetConsoleScreenBufferInfo (OutputHandle, out var csbi);
-				if (success) {
-					if (state == true) {
-						csbi.wAttributes |= 0x8000;
-					} else {
-						csbi.wAttributes &= 0x7FFF;
-					}
-					NetWinVTConsole.SetConsoleTextAttribute (OutputHandle, csbi.wAttributes);
-				}
+			if (state) {
+				Console.Out.Write ("\x1b[4m");
+				Console.Out.Flush ();
 			}
 		}
 
@@ -1869,9 +1838,7 @@ namespace Terminal.Gui {
 
 		public override Attribute GetAttribute ()
 		{
-			Attribute attr = currentAttribute;
-			attr.UnderLine = currentUnderlineAttribute == 1 ? true : false;
-			return attr;
+			return currentAttribute;
 		}
 
 		/// <inheritdoc/>
