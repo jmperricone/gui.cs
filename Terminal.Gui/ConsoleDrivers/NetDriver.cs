@@ -1167,6 +1167,8 @@ namespace Terminal.Gui {
 
 		int largestWindowHeight;
 
+		const int A_UNDERLINE = 0x100000;
+
 		public NetDriver ()
 		{
 			var p = Environment.OSVersion.Platform;
@@ -1205,7 +1207,7 @@ namespace Terminal.Gui {
 
 		public override void AddRune (Rune rune)
 		{
-			if (contents.Length != Rows * Cols * 4) {
+			if (contents.Length != Rows * Cols * 3) {
 				return;
 			}
 			rune = MakePrintable (rune);
@@ -1214,7 +1216,6 @@ namespace Terminal.Gui {
 				contents [crow, ccol, 0] = (int)(uint)rune;
 				contents [crow, ccol, 1] = currentAttribute;
 				contents [crow, ccol, 2] = 1;
-				contents [crow, ccol, 3] = currentAttribute.UnderLine ? 1 : 0;
 				dirtyLine [crow] = true;
 
 				ccol++;
@@ -1380,7 +1381,7 @@ namespace Terminal.Gui {
 
 			Clip = new Rect (0, 0, Cols, Rows);
 
-			contents = new int [Rows, Cols, 4];
+			contents = new int [Rows, Cols, 3];
 			dirtyLine = new bool [Rows];
 		}
 
@@ -1393,7 +1394,6 @@ namespace Terminal.Gui {
 						contents [row, c, 0] = ' ';
 						contents [row, c, 1] = (ushort)Colors.TopLevel.Normal;
 						contents [row, c, 2] = 0;
-						contents [row, c, 3] = 0; // underline
 						dirtyLine [row] = true;
 					}
 				}
@@ -1410,17 +1410,23 @@ namespace Terminal.Gui {
 		}
 
 		int redrawColor = -1;
-		void SetColor (int color)
+		void SetColor (int color, out bool underline)
 		{
 			redrawColor = color;
+			if ((redrawColor & A_UNDERLINE) > 0) {
+				underline = true;
+				redrawColor &= ~A_UNDERLINE;
+			} else {
+				underline = false;
+			}
 			IEnumerable<int> values = Enum.GetValues (typeof (ConsoleColor))
 			      .OfType<ConsoleColor> ()
 			      .Select (s => (int)s);
-			if (values.Contains (color & 0xffff)) {
-				Console.BackgroundColor = (ConsoleColor)(color & 0xffff);
+			if (values.Contains (redrawColor & 0xffff)) {
+				Console.BackgroundColor = (ConsoleColor)(redrawColor & 0xffff);
 			}
-			if (values.Contains ((color >> 16) & 0xffff)) {
-				Console.ForegroundColor = (ConsoleColor)((color >> 16) & 0xffff);
+			if (values.Contains ((redrawColor >> 16) & 0xffff)) {
+				Console.ForegroundColor = (ConsoleColor)((redrawColor >> 16) & 0xffff);
 			}
 		}
 
@@ -1445,7 +1451,7 @@ namespace Terminal.Gui {
 
 		public override void UpdateScreen ()
 		{
-			if (winChanging || Console.WindowHeight == 0 || contents.Length != Rows * Cols * 4
+			if (winChanging || Console.WindowHeight == 0 || contents.Length != Rows * Cols * 3
 				|| (!HeightAsBuffer && Rows != Console.WindowHeight)
 				|| (HeightAsBuffer && Rows != largestWindowHeight)) {
 				return;
@@ -1471,14 +1477,14 @@ namespace Terminal.Gui {
 					}
 					for (; col < cols && contents [row, col, 2] == 1; col++) {
 						var color = contents [row, col, 1];
+						var underline = redrawUnderline;
 						if (color != redrawColor) {
 							if (!AlwaysSetPosition) {
 								Console.Write (output);
 								output = new System.Text.StringBuilder ();
 							}
-							SetColor (color);
+							SetColor (color, out underline);
 						}
-						var underline = contents [row, col, 3] == 1 ? true : false;
 						if (underline != redrawUnderline) {
 							SetUnderline (underline);
 						}
@@ -1544,6 +1550,19 @@ namespace Terminal.Gui {
 		public override void SetAttribute (Attribute c)
 		{
 			currentAttribute = c;
+			if (c.UnderLine) {
+				if ((c.Value & A_UNDERLINE) == 0) {
+					var value = c.Value;
+					value |= A_UNDERLINE;
+					currentAttribute = new Attribute (value, c.Foreground, c.Background, true);
+				}
+			} else {
+				if ((c.Value & A_UNDERLINE) > 0) {
+					var value = c.Value;
+					value &= ~A_UNDERLINE;
+					currentAttribute = new Attribute (value, c.Foreground, c.Background, false);
+				}
+			}
 		}
 
 		Key MapKey (ConsoleKeyInfo keyInfo)

@@ -1481,7 +1481,6 @@ namespace Terminal.Gui {
 
 			if (Clip.Contains (ccol, crow)) {
 				OutputBuffer [position].Attributes = (ushort)currentAttribute;
-				OutputBuffer [position].Attributes |= (ushort)(currentAttribute.UnderLine ? WindowsConsole.COMMON_LVB_UNDERSCORE : 0);
 				OutputBuffer [position].Char.UnicodeChar = (char)rune;
 				contents [crow, ccol, 0] = (int)(uint)rune;
 				contents [crow, ccol, 1] = currentAttribute;
@@ -1516,6 +1515,19 @@ namespace Terminal.Gui {
 		public override void SetAttribute (Attribute c)
 		{
 			currentAttribute = c;
+			if (c.UnderLine) {
+				if ((c.Value & WindowsConsole.COMMON_LVB_UNDERSCORE) == 0) {
+					var value = c.Value;
+					value |= WindowsConsole.COMMON_LVB_UNDERSCORE;
+					currentAttribute = new Attribute (value, c.Foreground, c.Background, true);
+				}
+			} else {
+				if ((c.Value & WindowsConsole.COMMON_LVB_UNDERSCORE) > 0) {
+					var value = c.Value;
+					value &= ~WindowsConsole.COMMON_LVB_UNDERSCORE;
+					currentAttribute = new Attribute (value, c.Foreground, c.Background, false);
+				}
+			}
 		}
 
 		Attribute MakeColor (ConsoleColor f, ConsoleColor b)
